@@ -76,7 +76,7 @@ class PrintManager {
         boolean supported = PrintHelper.systemSupportsPrint();
 
         if (item != null) {
-            supported = PrintContent.getContentType(item, context) != UNSUPPORTED;
+            supported = PrintContent.getContentType(item, context, null) != UNSUPPORTED;
         }
 
         return supported;
