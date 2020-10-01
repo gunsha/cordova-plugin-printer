@@ -27,6 +27,8 @@ import android.graphics.BitmapFactory;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import org.json.JSONObject;
+
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -61,8 +63,8 @@ class PrintContent {
      * @return The content type even the file does not exist.
      */
     @NonNull
-    static ContentType getContentType(@Nullable String path, @NonNull Context context) {
-        return new PrintContent(context).getContentType(path);
+    static ContentType getContentType(@Nullable String path, @NonNull Context context, @Nullable JSONObject settings) {
+        return new PrintContent(context).getContentType(path, settings);
     }
 
     /**
@@ -73,10 +75,11 @@ class PrintContent {
      * @return The content type even the file does not exist.
      */
     @NonNull
-    private ContentType getContentType(@Nullable String path) {
+    private ContentType getContentType(@Nullable String path, @Nullable JSONObject settings) {
         ContentType type = ContentType.PLAIN;
-
-        if (path == null || path.isEmpty() || path.charAt(0) == '<') {
+        if(settings != null && settings.optString("mime") != null){
+            return this.switchMimeType(settings.optString("mime"));
+        } else if (path == null || path.isEmpty() || path.charAt(0) == '<') {
             type = ContentType.HTML;
         } else if (path.matches("^[a-z0-9]+://.+")) {
             String mime;
@@ -91,25 +94,29 @@ class PrintContent {
                 mime = URLConnection.guessContentTypeFromName(path);
             }
 
-            switch (mime) {
-                case "image/bmp":
-                case "image/png":
-                case "image/jpeg":
-                case "image/jpeg2000":
-                case "image/jp2":
-                case "image/gif":
-                case "image/x-icon":
-                case "image/vnd.microsoft.icon":
-                case "image/heif":
-                    return ContentType.IMAGE;
-                case "application/pdf":
-                    return ContentType.PDF;
-                default:
-                    return ContentType.UNSUPPORTED;
-            }
+            return this.switchMimeType(mime);
         }
 
         return type;
+    }
+
+    ContentType switchMimeType(String mime){
+        switch (mime) {
+            case "image/bmp":
+            case "image/png":
+            case "image/jpeg":
+            case "image/jpeg2000":
+            case "image/jp2":
+            case "image/gif":
+            case "image/x-icon":
+            case "image/vnd.microsoft.icon":
+            case "image/heif":
+                return ContentType.IMAGE;
+            case "application/pdf":
+                return ContentType.PDF;
+            default:
+                return ContentType.UNSUPPORTED;
+        }
     }
 
     /**

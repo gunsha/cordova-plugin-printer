@@ -111,7 +111,7 @@ class PrintManager {
     @SuppressWarnings("ConstantConditions")
     void print(@Nullable String content, @NonNull JSONObject settings, @NonNull WebView view,
             @NonNull OnPrintFinishCallback callback) {
-        switch (PrintContent.getContentType(content, context)) {
+        switch (PrintContent.getContentType(content, context, settings)) {
             case IMAGE:
                 printImage(content, settings, callback);
                 break;
